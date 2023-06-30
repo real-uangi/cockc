@@ -1,0 +1,14 @@
+{
+  "cock": {
+    "app_name": "test",
+    "register": {
+      "address": "127.0.0.1:9201",
+      "version": 1,
+      "heartbeat": {
+        "interval": 1000,
+        "timeout": 2000,
+        "offline": 5000
+      }
+    }
+  }
+}
