@@ -20,6 +20,7 @@ type Properties struct {
 
 type Cock struct {
 	AppName  string   `json:"app_name"`
+	Port     int      `json:"port"`
 	Register Register `json:"register"`
 }
 
@@ -32,7 +33,6 @@ type Register struct {
 type Heartbeat struct {
 	Interval int `json:"interval"`
 	Timeout  int `json:"timeout"`
-	Offline  int `json:"offline"`
 }
 
 type Server struct {

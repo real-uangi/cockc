@@ -61,22 +61,22 @@ func (c *CockClient) PullConfig() {
 }
 
 func (c *CockClient) StartHeartbeat() {
-
+	go c.heartbeat()
 }
 
 func (c *CockClient) heartbeat() {
 	if c.HeartbeatLock.TryLock() {
 		defer c.HeartbeatLock.Unlock()
 		for {
-			go beat()
+			go beat(c)
 			//
 			time.Sleep(time.Duration(c.Config.Register.Heartbeat.Interval) * time.Millisecond)
 		}
 	}
 }
 
-func beat() {
-
+func beat(c *CockClient) {
+	c.dial(heartbeat, c.Config)
 }
 
 func (c *CockClient) Online() {
