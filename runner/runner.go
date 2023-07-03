@@ -9,18 +9,24 @@ import (
 )
 
 type CockRunner struct {
+	cockClient client.CockClientService
 }
 
-var cockClientService client.CockClientService
-
 func Prepare() *CockRunner {
-	runner := &CockRunner{}
+	r := &CockRunner{}
 	config.Reload()
 
-	cockClientService = &client.CockClient{}
-	cockClientService.Load()
-	cockClientService.Connect()
-	cockClientService.PullConfig()
+	r.cockClient = &client.CockClient{}
+	r.cockClient.Load()
+	r.cockClient.Echo()
+	r.cockClient.PullConfig()
 
-	return runner
+	return r
+}
+
+func (r *CockRunner) Init() {
+
+	r.cockClient.StartHeartbeat()
+	r.cockClient.Online()
+
 }

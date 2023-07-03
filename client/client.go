@@ -4,32 +4,34 @@
 package client
 
 import (
-	"github.com/real-uangi/cockc/common/plog"
+	"encoding/json"
+	"fmt"
 	"github.com/real-uangi/cockc/config"
-	"log"
 	"math/rand"
-	"net/rpc"
+	"net"
 	"strconv"
 	"sync"
 	"time"
 )
 
-const (
-	rpcMode         = "tcp"
-	registerService = "CockServerService"
-)
+type CockMsg struct {
+	Operation string      `json:"operation"`
+	Msg       string      `json:"msg"`
+	Data      interface{} `json:"data"`
+	Timestamp int64       `json:"timestamp"`
+}
 
 const (
-	rpcEcho       = registerService + ".Echo"
-	rpcPullConfig = registerService + ".PullConfig"
-	rpcHeartbeat  = registerService + ".Heartbeat"
-	rpcOnline     = registerService + ".Online"
-	rpcOffline    = registerService + ".Offline"
+	echo       = "echo"
+	pullConfig = "pullConfig"
+	heartbeat  = "heartbeat"
+	online     = "online"
+	offline    = "offline"
 )
 
 type CockClientService interface {
 	Load()
-	Connect()
+	Echo()
 	PullConfig()
 	StartHeartbeat()
 	Online()
@@ -39,7 +41,6 @@ type CockClientService interface {
 type CockClient struct {
 	Up            bool
 	Config        config.Cock
-	Client        *rpc.Client
 	HeartbeatLock sync.Mutex
 }
 
@@ -48,35 +49,14 @@ func (c *CockClient) Load() {
 	c.Up = false
 }
 
-func (c *CockClient) Connect() {
-	if c.Client == nil {
-		client, err := rpc.Dial(rpcMode, c.Config.Register.Address)
-		if err != nil {
-			plog.Error(err.Error())
-			return
-		}
-		c.Client = client
-		var request = strconv.Itoa(rand.Intn(100000))
-		var reply string
-		err = c.Client.Call(rpcEcho, request, &reply)
-		if err != nil {
-			plog.Error(err.Error())
-			return
-		}
-		if reply == request {
-			log.Printf("connect to %s %s successfully \n", registerService, c.Config.Register.Address)
-		}
-	}
-
+func (c *CockClient) Echo() {
+	response := c.dial(echo, strconv.Itoa(rand.Intn(1000000)))
+	fmt.Printf("Cock server dealy %d ms msg: %s data: %s\n", time.Now().UnixMilli()-response.Timestamp, response.Msg, response.Data.(string))
 }
 
 func (c *CockClient) PullConfig() {
 	var cs string
-	c.Connect()
-	err := c.Client.Call(rpcPullConfig, c.Config.Register.Address, &cs)
-	if err != nil {
-		plog.Error(err.Error())
-	}
+
 	config.UpdateServerConfig(cs)
 }
 
@@ -88,6 +68,7 @@ func (c *CockClient) heartbeat() {
 	if c.HeartbeatLock.TryLock() {
 		defer c.HeartbeatLock.Unlock()
 		for {
+			go beat()
 			//
 			time.Sleep(time.Duration(c.Config.Register.Heartbeat.Interval) * time.Millisecond)
 		}
@@ -104,4 +85,46 @@ func (c *CockClient) Online() {
 
 func (c *CockClient) Offline() {
 	c.Up = false
+}
+
+func (c *CockClient) dial(operation string, data interface{}) CockMsg {
+	defer func() {
+		r := recover()
+		if r != nil {
+			fmt.Println(r)
+		}
+	}()
+	udp, err := net.ResolveUDPAddr("udp", c.Config.Register.Address)
+	if err != nil {
+		panic(err)
+	}
+	conn, err := net.DialUDP("udp", nil, udp)
+	if err != nil {
+		panic(err)
+	}
+	defer conn.Close()
+	msg := CockMsg{
+		Operation: operation,
+		Data:      data,
+		Timestamp: time.Now().UnixMilli(),
+	}
+	b, err := json.Marshal(msg)
+	if err != nil {
+		panic(err)
+	}
+	_, err = conn.Write(b)
+	if err != nil {
+		panic(err)
+	}
+	response := make([]byte, 1024)
+	size, err := conn.Read(response)
+	if err != nil {
+		panic(err)
+	}
+	msg = CockMsg{}
+	err = json.Unmarshal(response[:size], &msg)
+	if err != nil {
+		panic(err)
+	}
+	return msg
 }

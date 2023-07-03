@@ -7,19 +7,19 @@ import (
 	"github.com/real-uangi/cockc/client"
 	"github.com/real-uangi/cockc/config"
 	"testing"
-	"time"
 )
 
 var cockClientService client.CockClientService
 
 func TestClient(t *testing.T) {
 	config.Reload()
-	go cockRun()
-	time.Sleep(time.Minute)
+	cockClientService = &client.CockClient{}
+	cockClientService.Load()
+	for {
+		go cockClientService.Echo()
+	}
 }
 
 func cockRun() {
-	cockClientService = &client.CockClient{}
-	cockClientService.Load()
-	cockClientService.Connect()
+
 }
