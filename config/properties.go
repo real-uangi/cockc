@@ -6,7 +6,6 @@ package config
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/real-uangi/cockc/common/plog"
 	"os"
 	"sync"
 )
@@ -102,6 +101,6 @@ func UpdateServerConfig(cs string) {
 	defer p.mu.Unlock()
 	err := json.Unmarshal([]byte(cs), &p.Server)
 	if err != nil {
-		plog.Error(err.Error())
+		panic(err)
 	}
 }
