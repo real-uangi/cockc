@@ -18,6 +18,10 @@ func TestClient(t *testing.T) {
 	cockClientService.Load()
 	cockClientService.Echo()
 	cockClientService.StartHeartbeat()
+
+	time.Sleep(5 * time.Second)
+
+	cockClientService.Online()
 	time.Sleep(time.Minute)
 }
 

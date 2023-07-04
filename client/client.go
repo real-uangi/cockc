@@ -17,7 +17,7 @@ import (
 type CockMsg struct {
 	Operation string      `json:"operation"`
 	Msg       string      `json:"msg"`
-	Data      interface{} `json:"data"`
+	Data      config.Cock `json:"data"`
 	Timestamp int64       `json:"timestamp"`
 }
 
@@ -50,8 +50,8 @@ func (c *CockClient) Load() {
 }
 
 func (c *CockClient) Echo() {
-	response := c.dial(echo, strconv.Itoa(rand.Intn(1000000)))
-	fmt.Printf("Cock server dealy %d ms msg: %s data: %s\n", time.Now().UnixMilli()-response.Timestamp, response.Msg, response.Data.(string))
+	response := c.dial(echo, c.Config, strconv.Itoa(rand.Intn(1000000)))
+	fmt.Printf("Cock server dealy %d ms msg: %s ", time.Now().UnixMilli()-response.Timestamp, response.Msg)
 }
 
 func (c *CockClient) PullConfig() {
@@ -70,24 +70,26 @@ func (c *CockClient) heartbeat() {
 		for {
 			go beat(c)
 			//
-			time.Sleep(time.Duration(c.Config.Register.Heartbeat.Interval) * time.Millisecond)
+			time.Sleep(time.Duration(c.Config.Register.Heartbeat.Interval) * time.Second)
 		}
 	}
 }
 
 func beat(c *CockClient) {
-	c.dial(heartbeat, c.Config)
+	c.dial(heartbeat, c.Config, strconv.Itoa(rand.Intn(1000000)))
 }
 
 func (c *CockClient) Online() {
+	c.dial(online, c.Config, online)
 	c.Up = true
 }
 
 func (c *CockClient) Offline() {
+	c.dial(offline, c.Config, offline)
 	c.Up = false
 }
 
-func (c *CockClient) dial(operation string, data interface{}) CockMsg {
+func (c *CockClient) dial(operation string, data config.Cock, serial string) CockMsg {
 	defer func() {
 		r := recover()
 		if r != nil {
@@ -106,6 +108,7 @@ func (c *CockClient) dial(operation string, data interface{}) CockMsg {
 	msg := CockMsg{
 		Operation: operation,
 		Data:      data,
+		Msg:       serial,
 		Timestamp: time.Now().UnixMilli(),
 	}
 	b, err := json.Marshal(msg)
