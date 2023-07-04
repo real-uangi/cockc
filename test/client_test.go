@@ -10,11 +10,10 @@ import (
 	"time"
 )
 
-var cockClientService client.CockClientService
+var cockClientService client.CockClientService = &client.CockClient{}
 
 func TestClient(t *testing.T) {
 	config.Reload()
-	cockClientService = &client.CockClient{}
 	cockClientService.Load()
 	cockClientService.Echo()
 	cockClientService.StartHeartbeat()
@@ -25,6 +24,9 @@ func TestClient(t *testing.T) {
 	time.Sleep(time.Minute)
 }
 
-func cockRun() {
-
+func TestHeartbeat(t *testing.T) {
+	config.Reload()
+	cockClientService.Load()
+	cockClientService.StartHeartbeat()
+	time.Sleep(time.Minute)
 }

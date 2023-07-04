@@ -96,11 +96,15 @@ func (c *CockClient) dial(operation string, data config.Cock, serial string) Coc
 			fmt.Println(r)
 		}
 	}()
-	udp, err := net.ResolveUDPAddr("udp", c.Config.Register.Address)
+	remoteAddr, err := net.ResolveUDPAddr("udp", c.Config.Register.Address)
 	if err != nil {
 		panic(err)
 	}
-	conn, err := net.DialUDP("udp", nil, udp)
+	localAddr, err := net.ResolveUDPAddr("udp", ":"+strconv.Itoa(c.Config.Port))
+	if err != nil {
+		panic(err)
+	}
+	conn, err := net.DialUDP("udp", localAddr, remoteAddr)
 	if err != nil {
 		panic(err)
 	}
