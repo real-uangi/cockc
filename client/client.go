@@ -45,6 +45,7 @@ type CockClient struct {
 	Up            bool
 	Config        config.Cock
 	HeartbeatLock sync.Mutex
+	UdpLock       sync.Mutex
 }
 
 func (c *CockClient) Load() {
@@ -53,13 +54,18 @@ func (c *CockClient) Load() {
 }
 
 func (c *CockClient) Echo() {
-	response := c.dial(echo, c.Config, strconv.Itoa(rand.Intn(1000000)))
-	fmt.Printf("Cock server dealy %d ms msg: %s ", time.Now().UnixMilli()-response.Timestamp, response.Msg)
+	response := c.dial(echo, c.Config, strconv.Itoa(rand.Intn(1000000)), false)
+	logger.Info(fmt.Sprintf("Cock server dealy %d ms msg: %s \n", time.Now().UnixMilli()-response.Timestamp, response.Msg))
 }
 
 func (c *CockClient) PullConfig() {
 	var cs string
-
+	response := c.dial(pullConfig, c.Config, pullConfig, false)
+	if response.Msg == "" {
+		logger.Warn("Failed to pull config")
+		return
+	}
+	cs = response.Msg
 	config.UpdateServerConfig(cs)
 }
 
@@ -79,24 +85,38 @@ func (c *CockClient) heartbeat() {
 }
 
 func beat(c *CockClient) {
-	c.dial(heartbeat, c.Config, strconv.Itoa(rand.Intn(1000000)))
+	response := c.dial(heartbeat, c.Config, strconv.Itoa(rand.Intn(1000000)), true)
+	if response.Msg != "ok" {
+		logger.Warn("failed to send heartbeat")
+	}
 }
 
 func (c *CockClient) Online() {
-	c.dial(online, c.Config, online)
+	c.dial(online, c.Config, online, false)
 	c.Up = true
 }
 
 func (c *CockClient) Offline() {
-	c.dial(offline, c.Config, offline)
+	c.dial(offline, c.Config, offline, false)
 	c.Up = false
 }
 
-func (c *CockClient) dial(operation string, data config.Cock, serial string) CockMsg {
+func (c *CockClient) dial(operation string, data config.Cock, serial string, ignoreWhenBlock bool) CockMsg {
+
+	if ignoreWhenBlock {
+		if c.UdpLock.TryLock() {
+			defer c.UdpLock.Unlock()
+		} else {
+			return CockMsg{}
+		}
+	} else {
+		c.UdpLock.Lock()
+		defer c.UdpLock.Unlock()
+	}
 	defer func() {
 		r := recover()
 		if r != nil {
-			fmt.Println(r)
+			logger.Error(fmt.Sprintf("%v", r))
 		}
 	}()
 	remoteAddr, err := net.ResolveUDPAddr("udp", c.Config.Register.Address)

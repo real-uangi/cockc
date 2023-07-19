@@ -3,12 +3,7 @@
 // @date 2023/6/30 10:35
 package config
 
-import (
-	"encoding/json"
-	"fmt"
-	"os"
-	"sync"
-)
+import "sync"
 
 var p Properties
 
@@ -67,40 +62,4 @@ type redis struct {
 
 type snowflake struct {
 	Interval int `json:"interval"`
-}
-
-func Reload() {
-	f, err := os.Open("./config.json")
-	if err != nil {
-		panic(err)
-	}
-	defer f.Close()
-	dc := json.NewDecoder(f)
-	err = dc.Decode(&p)
-	if err != nil {
-		panic(err)
-	}
-}
-
-func GetPropertiesRO() Properties {
-	if p.Cock.AppName == "" {
-		fmt.Println(" [Warning] Empty Config !")
-		Reload()
-	}
-	if p.Cock.AppName == "" {
-		panic("Empty Config")
-	}
-	return Properties{
-		Cock:   p.Cock,
-		Server: p.Server,
-	}
-}
-
-func UpdateServerConfig(cs string) {
-	p.mu.Lock()
-	defer p.mu.Unlock()
-	err := json.Unmarshal([]byte(cs), &p.Server)
-	if err != nil {
-		panic(err)
-	}
 }
