@@ -9,6 +9,8 @@ import (
 	"time"
 )
 
+var logger = plog.New("snowflake")
+
 // ID sealed for more operations
 type ID int64
 
@@ -59,7 +61,7 @@ func newWorker() *Worker {
 	var i int64
 	for i = 0; i < workerMax; i++ {
 		if rdb.TryLock(redisRegKey+strconv.Itoa(int(i)), strconv.FormatInt(time.Now().UnixMilli(), 10), interval) {
-			plog.Info("Snowflake worker [" + strconv.Itoa(int(i)) + "] activating")
+			logger.Info("Snowflake worker [" + strconv.Itoa(int(i)) + "] activating")
 			w := &Worker{
 				timestamp: 0,
 				workerId:  i,
@@ -69,7 +71,7 @@ func newWorker() *Worker {
 			return w
 		}
 	}
-	plog.Error("Failed to register Snowflake instance")
+	logger.Error("Failed to register Snowflake instance")
 	panic("Failed to register Snowflake instance")
 }
 

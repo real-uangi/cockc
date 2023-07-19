@@ -1,7 +1,10 @@
 // Package api @author uangi 2023-05
 package api
 
-import "time"
+import (
+	"encoding/json"
+	"time"
+)
 
 type Result struct {
 	Code    int         `json:"code"`
@@ -41,4 +44,12 @@ func NotFound(message string) Result {
 		message = "404 Not Found"
 	}
 	return newResult(404, message, message)
+}
+
+func (r *Result) JsonBytes() []byte {
+	bs, err := json.Marshal(r)
+	if err != nil {
+		panic(err)
+	}
+	return bs
 }

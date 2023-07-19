@@ -18,6 +18,8 @@ var client *redis.Client
 
 var ctx = context.Background()
 
+var logger = plog.New("redis")
+
 const (
 	DefaultTtl = 86400
 )
@@ -52,15 +54,15 @@ func Init() {
 	}
 	GetClient()
 	if client != nil {
-		plog.Info("Redis client connected to " + c.Addr)
+		logger.Info("Redis client connected to " + c.Addr)
 		ping := client.Ping(ctx)
 		if ping != nil {
 			r, e := ping.Result()
 			if e != nil {
-				plog.Error(e.Error())
-				plog.Error("Redis connection check failed")
+				logger.Error(e.Error())
+				logger.Error("Redis connection check failed")
 			} else {
-				plog.Info("Redis 'ping' successfully responded as : " + r)
+				logger.Info("Redis 'ping' successfully responded as : " + r)
 			}
 		}
 	}
@@ -75,7 +77,7 @@ func Set(key string, value interface{}) {
 func SetWithExpire(key string, value interface{}, ttl int) {
 	err := GetClient().Set(ctx, key, value, time.Duration(ttl)*time.Second).Err()
 	if err != nil {
-		plog.Error(err.Error())
+		logger.Error(err.Error())
 	}
 }
 
@@ -83,7 +85,7 @@ func SetWithExpire(key string, value interface{}, ttl int) {
 func Get(key string) string {
 	res, err := GetClient().Get(ctx, key).Result()
 	if err != nil {
-		plog.Error(err.Error())
+		logger.Error(err.Error())
 	}
 	return res
 }
@@ -92,7 +94,7 @@ func Get(key string) string {
 func SetExpire(key string, ttl int) bool {
 	err := GetClient().Expire(ctx, key, time.Duration(ttl)*time.Second).Err()
 	if err != nil {
-		plog.Error(err.Error())
+		logger.Error(err.Error())
 		return false
 	}
 	return true
@@ -102,7 +104,7 @@ func SetExpire(key string, ttl int) bool {
 func TryLock(key string, parse string, ttl int) bool {
 	b, err := GetClient().SetNX(ctx, key, parse, time.Duration(ttl)*time.Second).Result()
 	if err != nil {
-		plog.Error(err.Error())
+		logger.Error(err.Error())
 	}
 	return b
 }
@@ -118,7 +120,7 @@ func Unlock(key string, parse string) {
 	args := []interface{}{parse}
 	err := script.Run(ctx, GetClient(), keys, args).Err()
 	if err != nil {
-		plog.Error(err.Error())
+		logger.Error(err.Error())
 	}
 }
 
@@ -126,7 +128,7 @@ func Unlock(key string, parse string) {
 func Incr(key string, count int64) int64 {
 	res, err := client.IncrBy(ctx, key, count).Result()
 	if err != nil {
-		plog.Error(err.Error())
+		logger.Error(err.Error())
 	}
 	return res
 }

@@ -1,6 +1,7 @@
 {
   "cock": {
     "app_name": "test",
+    "gate": "/api/test",
     "port": 9202,
     "register": {
       "address": "127.0.0.1:9201",

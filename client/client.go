@@ -6,6 +6,7 @@ package client
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/real-uangi/cockc/common/plog"
 	"github.com/real-uangi/cockc/config"
 	"math/rand"
 	"net"
@@ -13,6 +14,8 @@ import (
 	"sync"
 	"time"
 )
+
+var logger = plog.New("client")
 
 type CockMsg struct {
 	Operation string      `json:"operation"`

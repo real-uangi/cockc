@@ -14,9 +14,11 @@ import (
 
 var dbs = make(map[string]*sql.DB)
 
+var logger = plog.New("datasource")
+
 func InitDataSource() {
 	conf := config.GetPropertiesRO().Server.Datasource
-	plog.Info("Initializing pu55y datasource...")
+	logger.Info("Initializing pu55y datasource...")
 	var err error = nil
 	// init multiple datasource
 	for _, c := range conf {
@@ -32,7 +34,7 @@ func InitDataSource() {
 		)
 		db, err = sql.Open("postgres", cs)
 		if err != nil {
-			plog.Error(err.Error())
+			logger.Error(err.Error())
 		} else {
 			db.SetConnMaxLifetime(time.Hour)
 			db.SetConnMaxIdleTime(5 * time.Minute)
@@ -43,16 +45,16 @@ func InitDataSource() {
 		//check connection
 		rows, err := dbs[c.Name].Query("select 1 as ans")
 		if err != nil {
-			plog.Error(err.Error())
-			plog.Error("Datasource [" + c.Name + "] failed to initialize")
+			logger.Error(err.Error())
+			logger.Error("Datasource [" + c.Name + "] failed to initialize")
 		} else {
 			var a string
 			rows.Next()
 			e := rows.Scan(&a)
 			if e != nil {
-				plog.Error(e.Error())
+				logger.Error(e.Error())
 			}
-			plog.Info("Datasource [" + c.Name + "] initialized completed, test responded as : " + a)
+			logger.Info("Datasource [" + c.Name + "] initialized completed, test responded as : " + a)
 		}
 
 	}

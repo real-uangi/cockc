@@ -5,6 +5,9 @@ package runner
 
 import (
 	"github.com/real-uangi/cockc/client"
+	"github.com/real-uangi/cockc/common/datasource"
+	"github.com/real-uangi/cockc/common/rdb"
+	"github.com/real-uangi/cockc/common/snowflake"
 	"github.com/real-uangi/cockc/config"
 )
 
@@ -22,6 +25,15 @@ func Prepare() *CockRunner {
 	r.cockClient.PullConfig()
 
 	return r
+}
+
+func (r *CockRunner) EnableRedisAndSnowflake() {
+	rdb.Init()
+	snowflake.Init()
+}
+
+func (r *CockRunner) InitDatasource() {
+	datasource.InitDataSource()
 }
 
 func (r *CockRunner) Init() {
