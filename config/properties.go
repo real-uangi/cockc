@@ -15,6 +15,7 @@ type Properties struct {
 
 type Cock struct {
 	AppName  string   `json:"app_name"`
+	Gate     string   `json:"gate"`
 	Port     int      `json:"port"`
 	Register Register `json:"register"`
 }
