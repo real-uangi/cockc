@@ -13,8 +13,8 @@ type Result struct {
 	Time    string      `json:"time"`
 }
 
-func newResult(code int, message string, data interface{}) Result {
-	return Result{
+func newResult(code int, message string, data interface{}) *Result {
+	return &Result{
 		Code:    code,
 		Data:    data,
 		Message: message,
@@ -22,11 +22,11 @@ func newResult(code int, message string, data interface{}) Result {
 	}
 }
 
-func Success(data interface{}) Result {
+func Success(data interface{}) *Result {
 	return newResult(200, "success", data)
 }
 
-func Fail(err error, message string) Result {
+func Fail(err error, message string) *Result {
 	if err != nil {
 		if message == "" {
 			return newResult(0, message, err.Error())
@@ -39,7 +39,7 @@ func Fail(err error, message string) Result {
 	return newResult(500, "failed", nil)
 }
 
-func NotFound(message string) Result {
+func NotFound(message string) *Result {
 	if message == "" {
 		message = "404 Not Found"
 	}
