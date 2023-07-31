@@ -132,6 +132,11 @@ func (c *CockClient) dial(operation string, data config.Cock, serial string, ign
 		panic(err)
 	}
 	defer conn.Close()
+	err = conn.SetDeadline(time.Now().Add(5 * time.Second))
+	if err != nil {
+		logger.Error(err.Error())
+		return CockMsg{}
+	}
 	msg := CockMsg{
 		Operation: operation,
 		Data:      data,
