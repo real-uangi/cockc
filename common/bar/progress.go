@@ -6,6 +6,7 @@ package bar
 import (
 	"fmt"
 	"sync"
+	"time"
 	"unicode/utf8"
 )
 
@@ -15,6 +16,7 @@ type ProgressBar struct {
 	total      float64
 	graph      string
 	stick      string
+	start      time.Time
 	mu         sync.Mutex
 }
 
@@ -25,11 +27,18 @@ func NewProgressBar(total float64) *ProgressBar {
 		total:      total,
 		graph:      "█",
 		stick:      "",
+		start:      time.Now(),
 	}
 }
 
 func (b *ProgressBar) refresh() {
-	fmt.Printf("\r [%-50s] %.2f%%  %.2f/%.2f", b.stick, b.percentage, b.cur, b.total)
+	cost := time.Now().Sub(b.start).Seconds()
+	eta := cost*100.0/b.percentage - cost
+	fmt.Printf("\r %s [%-50s] %.2f%%  ETA%-8s  %.2f/%.2f", formatTime(int(cost)), b.stick, b.percentage, formatTime(int(eta)), b.cur, b.total)
+}
+
+func formatTime(sec int) string {
+	return fmt.Sprintf("%02d:%02d:%02d", sec/3600, sec/60%60, sec%60)
 }
 
 func (b *ProgressBar) Add(step float64) {
@@ -38,8 +47,9 @@ func (b *ProgressBar) Add(step float64) {
 	last := b.percentage
 	b.cur += step
 	b.percentage = b.cur / b.total * 100.0
+
 	length := int(b.percentage / 2.0)
-	for length != utf8.RuneCountInString(b.stick) {
+	for length > utf8.RuneCountInString(b.stick) {
 		b.stick += b.graph
 	}
 	if last != b.percentage {
