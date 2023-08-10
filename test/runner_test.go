@@ -4,6 +4,7 @@
 package test
 
 import (
+	"github.com/gin-gonic/gin"
 	"github.com/real-uangi/cockc/common/api"
 	"github.com/real-uangi/cockc/runner"
 	"net/http"
@@ -13,18 +14,15 @@ import (
 
 func TestRunner(t *testing.T) {
 	r := runner.Prepare()
-	r.EnableRedisAndSnowflake()
-	r.InitDatasource()
+	//r.EnableRedisAndSnowflake()
+	//r.InitDatasource()
 
-	r.HttpHandleFunc("/hello", handleHttp)
+	r.GetRouter().GET("/handle", handleHttp)
 
 	r.Init()
 	time.Sleep(time.Hour)
 }
 
-func handleHttp(w http.ResponseWriter, r *http.Request) {
-	_, err := w.Write(api.Success("hi!").JsonBytes())
-	if err != nil {
-		return
-	}
+func handleHttp(c *gin.Context) {
+	c.JSON(http.StatusOK, api.Success("yeah"))
 }
