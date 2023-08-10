@@ -33,15 +33,9 @@ type Heartbeat struct {
 
 type Server struct {
 	Loaded     bool         `json:"loaded"`
-	Http       http         `json:"http"`
 	Datasource []datasource `json:"datasource"`
 	Redis      redis        `json:"rdb"`
 	Snowflake  snowflake    `json:"snowflake"`
-}
-
-type http struct {
-	Port string `json:"port"`
-	Log  bool   `json:"log"`
 }
 
 type datasource struct {

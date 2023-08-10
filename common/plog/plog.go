@@ -34,20 +34,20 @@ func New(name string) *Logger {
 	}
 }
 
-func (l *Logger) getLine(lv string, msg string, t time.Time) string {
-	return fmt.Sprintf("%s [%s] %s :  %s\n", time.Now().Format("2006-01-02 15:04:05"), lv, l.PrettyName, msg)
+func (l *Logger) GetLine(lv string, msg string, t time.Time) string {
+	return fmt.Sprintf("%s [%s] %s :  %s\n", t.Format("2006-01-02 15:04:05"), lv, l.PrettyName, msg)
 }
 
 func (l *Logger) Info(s string) {
-	fmt.Print(l.getLine(LvInfo, s, time.Now()))
+	fmt.Print(l.GetLine(LvInfo, s, time.Now()))
 }
 
 func (l *Logger) Warn(s string) {
-	fmt.Print(l.getLine(LvWarn, s, time.Now()))
+	fmt.Print(l.GetLine(LvWarn, s, time.Now()))
 }
 
 func (l *Logger) Error(s string) {
-	fmt.Print(l.getLine(LvError, s, time.Now()))
+	fmt.Print(l.GetLine(LvError, s, time.Now()))
 }
 
 func (l *Logger) TryThrow(err error) {
