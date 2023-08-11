@@ -12,6 +12,8 @@ import (
 	"github.com/real-uangi/cockc/common/rdb"
 	"github.com/real-uangi/cockc/common/snowflake"
 	"github.com/real-uangi/cockc/config"
+	"sync"
+	"time"
 )
 
 var logger = plog.New("runner")
@@ -20,6 +22,7 @@ type CockRunner struct {
 	cockClient       client.CockClientService
 	httpServerEnable bool
 	engine           *gin.Engine
+	once             sync.Once
 }
 
 func Prepare() *CockRunner {
@@ -62,7 +65,7 @@ func (r *CockRunner) InitDatasource() {
 	datasource.InitDataSource()
 }
 
-func (r *CockRunner) Init() {
+func (r *CockRunner) RunAsync() {
 	if r.httpServerEnable {
 		go func() {
 			port := fmt.Sprintf(":%d", config.GetPropertiesRO().Cock.Port)
@@ -73,6 +76,23 @@ func (r *CockRunner) Init() {
 			}
 		}()
 	}
+	time.Sleep(5 * time.Second)
 	r.cockClient.StartHeartbeat()
 	r.cockClient.Online()
+}
+
+func (r *CockRunner) Run() {
+	go func() {
+		time.Sleep(5 * time.Second)
+		r.cockClient.StartHeartbeat()
+		r.cockClient.Online()
+	}()
+	if r.httpServerEnable {
+		port := fmt.Sprintf(":%d", config.GetPropertiesRO().Cock.Port)
+		logger.Info("server running on " + port)
+		err := r.engine.Run(port)
+		if err != nil {
+			logger.Error(err.Error())
+		}
+	}
 }
