@@ -12,6 +12,8 @@ import (
 	"github.com/real-uangi/cockc/common/rdb"
 	"github.com/real-uangi/cockc/common/snowflake"
 	"github.com/real-uangi/cockc/config"
+	"net"
+	"net/http"
 	"sync"
 	"time"
 )
@@ -71,10 +73,7 @@ func (r *CockRunner) RunAsync() {
 			go func() {
 				port := fmt.Sprintf(":%d", config.GetPropertiesRO().Cock.Port)
 				logger.Info("server running on " + port)
-				err := r.engine.Run(port)
-				if err != nil {
-					logger.Error(err.Error())
-				}
+				serve46(r.engine, port)
 			}()
 		}
 		time.Sleep(5 * time.Second)
@@ -93,10 +92,19 @@ func (r *CockRunner) Run() {
 		if r.httpServerEnable {
 			port := fmt.Sprintf(":%d", config.GetPropertiesRO().Cock.Port)
 			logger.Info("server running on " + port)
-			err := r.engine.Run(port)
-			if err != nil {
-				logger.Error(err.Error())
-			}
+			serve46(r.engine, port)
 		}
 	})
+}
+
+func serve46(r *gin.Engine, port string) {
+	server := &http.Server{Addr: port, Handler: r}
+	ln, err := net.Listen("tcp", port)
+	if err != nil {
+		panic(err)
+	}
+	err = server.Serve(ln.(*net.TCPListener))
+	if err != nil {
+		panic(err)
+	}
 }
