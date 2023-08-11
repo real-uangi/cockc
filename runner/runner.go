@@ -73,7 +73,7 @@ func (r *CockRunner) RunAsync() {
 			go func() {
 				port := fmt.Sprintf(":%d", config.GetPropertiesRO().Cock.Port)
 				logger.Info("server running on " + port)
-				serve46(r.engine, port)
+				serveOnly4(r.engine, port)
 			}()
 		}
 		time.Sleep(5 * time.Second)
@@ -92,14 +92,14 @@ func (r *CockRunner) Run() {
 		if r.httpServerEnable {
 			port := fmt.Sprintf(":%d", config.GetPropertiesRO().Cock.Port)
 			logger.Info("server running on " + port)
-			serve46(r.engine, port)
+			serveOnly4(r.engine, port)
 		}
 	})
 }
 
-func serve46(r *gin.Engine, port string) {
+func serveOnly4(r *gin.Engine, port string) {
 	server := &http.Server{Addr: port, Handler: r}
-	ln, err := net.Listen("tcp", port)
+	ln, err := net.Listen("tcp4", port)
 	if err != nil {
 		panic(err)
 	}
