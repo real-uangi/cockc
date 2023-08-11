@@ -9,7 +9,6 @@ import (
 	"github.com/real-uangi/cockc/runner"
 	"net/http"
 	"testing"
-	"time"
 )
 
 func TestRunner(t *testing.T) {
@@ -19,8 +18,8 @@ func TestRunner(t *testing.T) {
 
 	r.GetRouter().GET("/handle", handleHttp)
 
-	r.Init()
-	time.Sleep(time.Hour)
+	//r.RunAsync()
+	r.Run()
 }
 
 func handleHttp(c *gin.Context) {
