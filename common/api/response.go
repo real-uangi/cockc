@@ -3,6 +3,7 @@ package api
 
 import (
 	"encoding/json"
+	"net/http"
 	"time"
 )
 
@@ -43,7 +44,14 @@ func NotFound(message string) *Result {
 	if message == "" {
 		message = "404 Not Found"
 	}
-	return newResult(404, message, message)
+	return newResult(http.StatusNotFound, message, message)
+}
+
+func UnAuthorized(message string) *Result {
+	if message == "" {
+		message = "410 Unauthorized"
+	}
+	return newResult(http.StatusUnauthorized, message, message)
 }
 
 func (r *Result) JsonBytes() []byte {

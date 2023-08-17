@@ -67,6 +67,10 @@ func (r *CockRunner) InitDatasource() {
 	datasource.InitDataSource()
 }
 
+func (r *CockRunner) EnableAuthentication() {
+
+}
+
 func (r *CockRunner) RunAsync() {
 	r.once.Do(func() {
 		if r.httpServerEnable {
@@ -94,7 +98,7 @@ func (r *CockRunner) Run() {
 }
 
 func serveOnly4(r *gin.Engine, port int) {
-	addr := fmt.Sprintf("0.0.0.0:%d", config.GetPropertiesRO().Cock.Port)
+	addr := fmt.Sprintf("0.0.0.0:%d", port)
 	logger.Info("server running on " + addr)
 	server := &http.Server{Addr: addr, Handler: r}
 	ln, err := net.Listen("tcp4", addr)
