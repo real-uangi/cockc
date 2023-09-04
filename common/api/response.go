@@ -2,7 +2,7 @@
 package api
 
 import (
-	"encoding/json"
+	"github.com/real-uangi/cockc/common/convert"
 	"net/http"
 	"time"
 )
@@ -27,17 +27,8 @@ func Success(data interface{}) *Result {
 	return newResult(200, "success", data)
 }
 
-func Fail(err error, message string) *Result {
-	if err != nil {
-		if message == "" {
-			return newResult(0, message, err.Error())
-		}
-		return newResult(500, "failed", err.Error())
-	}
-	if message == "" {
-		return newResult(0, message, message)
-	}
-	return newResult(500, "failed", nil)
+func Fail(message string, data interface{}) *Result {
+	return newResult(500, message, data)
 }
 
 func NotFound(message string) *Result {
@@ -55,9 +46,5 @@ func UnAuthorized(message string) *Result {
 }
 
 func (r *Result) JsonBytes() []byte {
-	bs, err := json.Marshal(r)
-	if err != nil {
-		panic(err)
-	}
-	return bs
+	return convert.ToJsonBytes(r)
 }

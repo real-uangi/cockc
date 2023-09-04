@@ -6,4 +6,7 @@ package constants
 const (
 	AuthResultContext = "system_auth_result"
 	AuthInfoContext   = "system_auth_info"
+	NoTokenKeyword    = "unsafe"
+	AuthHeader        = "Authorization"
+	AuthRedisKey      = "AuthToken:"
 )

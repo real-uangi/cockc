@@ -4,6 +4,7 @@
 package runner
 
 import (
+	"context"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/real-uangi/cockc/client"
@@ -14,6 +15,8 @@ import (
 	"github.com/real-uangi/cockc/config"
 	"net"
 	"net/http"
+	"os"
+	"os/signal"
 	"sync"
 	"time"
 )
@@ -71,19 +74,6 @@ func (r *CockRunner) EnableAuthentication() {
 
 }
 
-func (r *CockRunner) RunAsync() {
-	r.once.Do(func() {
-		if r.httpServerEnable {
-			go func() {
-				serveOnly4(r.engine, config.GetPropertiesRO().Cock.Port)
-			}()
-		}
-		time.Sleep(5 * time.Second)
-		r.cockClient.StartHeartbeat()
-		r.cockClient.Online()
-	})
-}
-
 func (r *CockRunner) Run() {
 	r.once.Do(func() {
 		go func() {
@@ -98,6 +88,10 @@ func (r *CockRunner) Run() {
 }
 
 func serveOnly4(r *gin.Engine, port int) {
+	//use ctx
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
+	defer stop()
+	//start http server
 	addr := fmt.Sprintf("0.0.0.0:%d", port)
 	logger.Info("server running on " + addr)
 	server := &http.Server{Addr: addr, Handler: r}
@@ -105,8 +99,20 @@ func serveOnly4(r *gin.Engine, port int) {
 	if err != nil {
 		panic(err)
 	}
-	err = server.Serve(ln.(*net.TCPListener))
-	if err != nil {
-		panic(err)
+	go func() {
+		err = server.Serve(ln.(*net.TCPListener))
+		if err != nil {
+			logger.Error(err.Error())
+		}
+	}()
+	//graceful shutdown
+	<-ctx.Done()
+	logger.Info("shutting down ...")
+	stop()
+	//wait for 15 sec
+	timeoutCtx, cancelFunc := context.WithTimeout(context.Background(), 15*time.Second)
+	defer cancelFunc()
+	if err := server.Shutdown(timeoutCtx); err != nil {
+		logger.Error(err.Error())
 	}
 }

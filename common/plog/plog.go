@@ -2,7 +2,6 @@
 package plog
 
 import (
-	"errors"
 	"fmt"
 	"time"
 )
@@ -50,13 +49,9 @@ func (l *Logger) Error(s string) {
 	fmt.Print(l.GetLine(LvError, s, time.Now()))
 }
 
-func (l *Logger) TryThrow(err error) {
+func (l *Logger) Panic(err error) {
 	if err != nil {
-		l.Panic(err.Error())
+		l.Error(err.Error())
+		panic(err)
 	}
-}
-
-func (l *Logger) Panic(msg string) {
-	l.Error(msg)
-	panic(errors.New(msg))
 }
