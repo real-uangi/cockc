@@ -10,6 +10,7 @@ import (
 	"github.com/real-uangi/cockc/common/plog"
 	"github.com/real-uangi/cockc/common/rdb"
 	"github.com/real-uangi/cockc/common/recoverUtil"
+	"github.com/real-uangi/cockc/common/response"
 	"github.com/real-uangi/cockc/constants"
 	"net/http"
 	"strings"
@@ -36,7 +37,7 @@ type AuthInfo struct {
 func GetUserInfo(c *gin.Context) AuthInfo {
 	v, b := c.Get(constants.AuthInfoContext)
 	if !b {
-		c.JSON(http.StatusUnauthorized, UnAuthorized("410 Unauthorized"))
+		c.JSON(http.StatusUnauthorized, response.UnAuthorized("410 Unauthorized"))
 	}
 	return v.(AuthInfo)
 }
@@ -45,7 +46,7 @@ func IsAuthed(c *gin.Context) bool {
 	return c.GetBool(constants.AuthResultContext)
 }
 
-func auth() gin.HandlerFunc {
+func Auth() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		defer recoverUtil.Gin().Catch(c)
 		if isNoAuth(c.FullPath()) {
@@ -53,7 +54,7 @@ func auth() gin.HandlerFunc {
 		}
 		token := c.GetHeader(constants.AuthHeader)
 		if len(token) == 0 {
-			c.JSON(http.StatusUnauthorized, UnAuthorized("410 Unauthorized"))
+			c.JSON(http.StatusUnauthorized, response.UnAuthorized("401 Unauthorized"))
 			c.Abort()
 			return
 		}

@@ -1,5 +1,6 @@
-// Package api @author uangi 2023-05
-package api
+// Package response
+// @author uangi 2023-05
+package response
 
 import (
 	"github.com/real-uangi/cockc/common/convert"
@@ -35,14 +36,14 @@ func NotFound(message string) *Result {
 	if message == "" {
 		message = "404 Not Found"
 	}
-	return newResult(http.StatusNotFound, message, message)
+	return newResult(http.StatusNotFound, message, nil)
 }
 
 func UnAuthorized(message string) *Result {
 	if message == "" {
-		message = "410 Unauthorized"
+		message = "401 Unauthorized"
 	}
-	return newResult(http.StatusUnauthorized, message, message)
+	return newResult(http.StatusUnauthorized, message, nil)
 }
 
 func (r *Result) JsonBytes() []byte {

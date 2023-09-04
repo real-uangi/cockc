@@ -5,7 +5,7 @@ package test
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/real-uangi/cockc/common/api"
+	"github.com/real-uangi/cockc/common/response"
 	"github.com/real-uangi/cockc/runner"
 	"net/http"
 	"testing"
@@ -23,5 +23,5 @@ func TestRunner(t *testing.T) {
 }
 
 func handleHttp(c *gin.Context) {
-	c.JSON(http.StatusOK, api.Success("yeah"))
+	c.JSON(http.StatusOK, response.Success("yeah"))
 }

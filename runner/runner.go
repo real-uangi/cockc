@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/real-uangi/cockc/client"
+	"github.com/real-uangi/cockc/common/api"
 	"github.com/real-uangi/cockc/common/datasource"
 	"github.com/real-uangi/cockc/common/plog"
 	"github.com/real-uangi/cockc/common/rdb"
@@ -22,6 +23,7 @@ import (
 )
 
 var logger = plog.New("runner")
+var ginLogger = plog.New("gin")
 
 type CockRunner struct {
 	cockClient       client.CockClientService
@@ -43,14 +45,14 @@ func Prepare() *CockRunner {
 	r.engine = gin.New()
 	formatter := func(param gin.LogFormatterParams) string {
 		var msg = fmt.Sprintf("[%d] %s takes %dms", param.StatusCode, param.Path, param.Latency.Microseconds())
-		return logger.GetLine(plog.LvInfo, msg, param.TimeStamp)
+		return ginLogger.GetLine(plog.LvInfo, msg, param.TimeStamp)
 	}
 	r.engine.Use(gin.LoggerWithConfig(gin.LoggerConfig{
 		Formatter: formatter,
 		Output:    nil,
 		SkipPaths: nil,
 	}))
-
+	r.engine.Use(api.Auth())
 	return r
 }
 

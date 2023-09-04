@@ -6,7 +6,7 @@ package recoverUtil
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"github.com/real-uangi/cockc/common/api"
+	"github.com/real-uangi/cockc/common/response"
 	"net/http"
 )
 
@@ -22,6 +22,7 @@ func (g *GinRecover) Catch(c *gin.Context) {
 	ev := recover()
 	if ev != nil {
 		logger.Error(fmt.Sprint(ev))
-		c.JSON(http.StatusInternalServerError, api.Fail(ev.(error).Error(), nil))
+		c.JSON(http.StatusInternalServerError, response.Fail(ev.(error).Error(), nil))
+		c.Abort()
 	}
 }
